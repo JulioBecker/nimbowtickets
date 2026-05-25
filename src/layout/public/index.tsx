@@ -182,9 +182,11 @@ export default function PublicLayout({ children }: { children?: React.ReactNode 
                           <MenuItem onClick={() => handleUserMenuSelect(paths.dashboard.root)} sx={{ '&:hover': { bgcolor: '#333333' } }}>
                             <Iconify icon="carbon:user" sx={{ mr: 1, color: '#8E33FF' }} /> Painel do Cliente
                           </MenuItem>
-                          <MenuItem onClick={() => handleUserMenuSelect(paths.dashboard.producer)} sx={{ '&:hover': { bgcolor: '#333333' } }}>
-                            <Iconify icon="carbon:event" sx={{ mr: 1, color: '#8E33FF' }} /> Área do Produtor
-                          </MenuItem>
+                          {user?.role === 'admin' && (
+                            <MenuItem onClick={() => handleUserMenuSelect(paths.dashboard.producer)} sx={{ '&:hover': { bgcolor: '#333333' } }}>
+                              <Iconify icon="carbon:event" sx={{ mr: 1, color: '#8E33FF' }} /> Área do Produtor
+                            </MenuItem>
+                          )}
                           <MenuItem onClick={() => handleUserMenuSelect('logout')} sx={{ color: '#ff5630', '&:hover': { bgcolor: '#333333' } }}>
                             <Iconify icon="carbon:logout" sx={{ mr: 1 }} /> Sair
                           </MenuItem>
@@ -272,8 +274,10 @@ export default function PublicLayout({ children }: { children?: React.ReactNode 
             { label: 'Favoritos', path: `${paths.dashboard.root}?tab=2`, icon: 'carbon:favorite' },
             { label: 'Meu Cash', path: `${paths.dashboard.root}?tab=3`, icon: 'carbon:wallet' },
             { label: 'Central de Ajuda', path: `${paths.dashboard.root}?tab=4`, icon: 'carbon:help' },
-            ...(user.role === 'admin' ? [{ label: 'Aprovação de Eventos', path: `${paths.dashboard.root}?tab=5`, icon: 'carbon:checkmark-outline' }] : []),
-            { label: 'Área do Produtor', path: paths.dashboard.producer, icon: 'carbon:event' },
+            ...(user.role === 'admin' ? [
+              { label: 'Aprovação de Eventos', path: `${paths.dashboard.root}?tab=5`, icon: 'carbon:checkmark-outline' },
+              { label: 'Área do Produtor', path: paths.dashboard.producer, icon: 'carbon:event' }
+            ] : []),
           ]).map((item) => (
             <ListItem
               button
@@ -361,7 +365,9 @@ export default function PublicLayout({ children }: { children?: React.ReactNode 
             <Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#8E33FF' }}>Para Produtores</Typography>
               <List sx={{ p: 0 }}>
-                <ListItem onClick={() => navigate(paths.dashboard.producer)} sx={{ p: 0, mb: 1, cursor: 'pointer', '&:hover': { color: '#8E33FF' } }}>Criar Evento</ListItem>
+                {user?.role === 'admin' && (
+                  <ListItem onClick={() => navigate(paths.dashboard.producer)} sx={{ p: 0, mb: 1, cursor: 'pointer', '&:hover': { color: '#8E33FF' } }}>Criar Evento</ListItem>
+                )}
                 <ListItem onClick={() => navigate(paths.tickets.serviceFees)} sx={{ p: 0, mb: 1, cursor: 'pointer', '&:hover': { color: '#8E33FF' } }}>Taxas de Serviço</ListItem>
                 <ListItem onClick={() => navigate(paths.tickets.managementAB)} sx={{ p: 0, mb: 1, cursor: 'pointer', '&:hover': { color: '#8E33FF' } }}>Nimbow Gestão A&B</ListItem>
                 <ListItem onClick={() => navigate(paths.tickets.cashlessNfc)} sx={{ p: 0, mb: 1, cursor: 'pointer', '&:hover': { color: '#8E33FF' } }}>Operação Cashless NFC</ListItem>

@@ -122,6 +122,17 @@ function GuestGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminGuard({ children }: { children: React.ReactNode }) {
+  const { user } = useUserStore();
+  if (!user) {
+    return <Navigate to={paths.auth.login} replace />;
+  }
+  if (user.role !== 'admin') {
+    return <Navigate to={paths.dashboard.root} replace />;
+  }
+  return <>{children}</>;
+}
+
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -177,9 +188,9 @@ function App() {
           <Route
             path={paths.dashboard.producer}
             element={
-              <AuthGuard>
+              <AdminGuard>
                 <ProducerDashboard />
-              </AuthGuard>
+              </AdminGuard>
             }
           />
 
