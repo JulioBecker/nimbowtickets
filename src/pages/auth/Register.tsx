@@ -19,6 +19,7 @@ import { useAuthStore } from 'src/store/auth';
 import { useUserStore } from 'src/store/user';
 import axiosInstance from 'src/utils/axios';
 import { paths } from 'src/routes/paths';
+import { masks } from 'src/utils/masks';
 import Notiflix from 'notiflix';
 
 function getPasswordStrength(password: string): number {
@@ -40,6 +41,7 @@ export default function Register() {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [document, setDocument] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -49,8 +51,13 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      Notiflix.Notify.failure('Nome, e-mail e senha são obrigatórios.');
+    if (!name || !email || !password || !document) {
+      Notiflix.Notify.failure('Nome, e-mail, CPF e senha são obrigatórios.');
+      return;
+    }
+    const cleanCPF = document.replace(/\D/g, '');
+    if (cleanCPF.length !== 11) {
+      Notiflix.Notify.warning('Digite um CPF válido com 11 dígitos.');
       return;
     }
     if (password.length < 6 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
@@ -59,7 +66,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await axiosInstance.post('/user/register', { name, email, password, phone });
+      await axiosInstance.post('/user/register', { name, email, password, phone, document });
       const { data } = await axiosInstance.post('/user/login', { email, password });
       setToken(data.token);
       setUser(data.user);
@@ -67,7 +74,7 @@ export default function Register() {
       navigate(paths.dashboard.root);
     } catch (err: any) {
       console.error(err);
-      Notiflix.Notify.failure(err?.message || 'Falha ao realizar cadastro. Tente outro e-mail.');
+      Notiflix.Notify.failure(err?.response?.data?.error || err?.message || 'Falha ao realizar cadastro. Tente outro e-mail.');
     } finally {
       setLoading(false);
     }
@@ -124,6 +131,21 @@ export default function Register() {
                   InputProps={{
                     sx: inputStyles,
                     startAdornment: <InputAdornment position="start"><Iconify icon="carbon:email" sx={{ color: 'text.secondary' }} /></InputAdornment>
+                  }}
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#111111' }}>CPF *</Typography>
+                <TextField
+                  fullWidth
+                  placeholder="000.000.000-00"
+                  value={document}
+                  onChange={(e) => setDocument(masks.cpf(e.target.value))}
+                  required
+                  InputProps={{
+                    sx: inputStyles,
+                    startAdornment: <InputAdornment position="start"><Iconify icon="carbon:identification" sx={{ color: 'text.secondary' }} /></InputAdornment>
                   }}
                 />
               </Box>

@@ -60,6 +60,7 @@ export default function CheckoutPage() {
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authName, setAuthName] = useState('');
+  const [authCPF, setAuthCPF] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
   const [buyerName, setBuyerName] = useState(user?.name?.split(' ')[0] || '');
@@ -261,8 +262,13 @@ export default function CheckoutPage() {
 
   const handleGuestRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authEmail || !authPassword || !authName) {
+    if (!authEmail || !authPassword || !authName || !authCPF) {
       Notiflix.Notify.failure('Preencha todos os campos obrigatórios.');
+      return;
+    }
+    const cleanCPF = authCPF.replace(/\D/g, '');
+    if (cleanCPF.length !== 11) {
+      Notiflix.Notify.warning('Digite um CPF válido com 11 dígitos.');
       return;
     }
     if (authPassword.length < 6 || !/[A-Z]/.test(authPassword) || !/[0-9]/.test(authPassword)) {
@@ -271,13 +277,13 @@ export default function CheckoutPage() {
     }
     setAuthLoading(true);
     try {
-      await axiosInstance.post('/user/register', { name: authName, email: authEmail, password: authPassword });
+      await axiosInstance.post('/user/register', { name: authName, email: authEmail, password: authPassword, document: authCPF });
       const { data } = await axiosInstance.post('/user/login', { email: authEmail, password: authPassword });
       setToken(data.token);
       setUser(data.user);
       Notiflix.Notify.success('Cadastro realizado com sucesso!');
     } catch (err: any) {
-      Notiflix.Notify.failure(err?.message || 'Falha no cadastro');
+      Notiflix.Notify.failure(err?.response?.data?.error || err?.message || 'Falha no cadastro');
     } finally {
       setAuthLoading(false);
     }
@@ -520,9 +526,10 @@ export default function CheckoutPage() {
               ) : (
                 <Box component="form" onSubmit={handleGuestRegister}>
                   <Stack spacing={2.5}>
-                    <TextField fullWidth label="Nome Completo" value={authName} onChange={(e) => setAuthName(e.target.value)} />
-                    <TextField fullWidth label="E-mail" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} />
-                    <TextField fullWidth type="password" label="Senha" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} />
+                    <TextField fullWidth label="Nome Completo" value={authName} onChange={(e) => setAuthName(e.target.value)} required />
+                    <TextField fullWidth label="E-mail" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} type="email" required />
+                    <TextField fullWidth label="CPF" value={authCPF} onChange={(e) => setAuthCPF(masks.cpf(e.target.value))} required />
+                    <TextField fullWidth type="password" label="Senha" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} required />
                     <Button
                       fullWidth
                       variant="contained"
